@@ -1,28 +1,19 @@
-body {
-    margin: 0;
-    height: 100vh;
-    /* background-image: url("../images/bg1.jpg"); */
-    /* background-image: url("../images/bg4.jpg"); */
-    background-image: url("../images/bg2.png");
-    background-size: cover;
-    background-position: center;
-    font-family: Arial, sans-serif;
-}
-
-
+/* Reset & safety */
 * {
     box-sizing: border-box;
 }
 
-/* body {
+body {
     margin: 0;
     height: 100vh;
-    background-image: url("../images/bg2.png");
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     font-family: Arial, sans-serif;
-} */
+    transition: background-image 1s ease-in-out;
+}
 
+/* Center content */
 .overlay {
     height: 100vh;
     display: flex;
@@ -35,15 +26,27 @@ body {
     width: 380px;
     padding: 35px;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 25px 45px rgba(0,0,0,0.4);
     text-align: center;
     color: #fff;
 }
 
-/* Input with icon */
+/* Heading */
+.signup-box h2 {
+    margin-bottom: 5px;
+    font-size: 28px;
+}
+
+.subtitle {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 25px;
+}
+
+/* Inputs */
 .input-group {
     position: relative;
     margin-bottom: 15px;
@@ -56,7 +59,6 @@ body {
     border: none;
     outline: none;
     font-size: 14px;
-    box-sizing: border-box;
 }
 
 .input-group span {
@@ -70,5 +72,40 @@ body {
 button {
     width: 100%;
     padding: 12px;
+    border: none;
     border-radius: 8px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+/* Error message */
+.error {
+    margin-top: 12px;
+    color: #ffb3b3;
+    font-size: 13px;
+}
+
+/* Login link */
+.login-link {
+    margin-top: 18px;
+    font-size: 14px;
+}
+
+.login-link a {
+    color: #00ffc3;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
 }
