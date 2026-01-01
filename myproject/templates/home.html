@@ -26,14 +26,16 @@
                 <span>📧</span>
             </div>
 
+            <!-- Password -->
             <div class="input-group">
-                <input type="password" name="password" placeholder="Password" required>
-                <span>🔒</span>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <span class="toggle" onclick="togglePassword('password', this)">👁️</span>
             </div>
 
+            <!-- Confirm Password -->
             <div class="input-group">
-                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-                <span>🔐</span>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                <span class="toggle" onclick="togglePassword('confirm_password', this)">👁️</span>
             </div>
 
             <button type="submit">Sign Up</button>
@@ -49,6 +51,21 @@
         </p>
     </div>
 </div>
+
+<!-- Password Toggle Script -->
+<script>
+    function togglePassword(fieldId, icon) {
+        const input = document.getElementById(fieldId);
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.textContent = "🙈";
+        } else {
+            input.type = "password";
+            icon.textContent = "👁️";
+        }
+    }
+</script>
 
 <!-- Background Image Slider -->
 <script>
@@ -66,7 +83,7 @@
     }
 
     changeBackground();
-    setInterval(changeBackground, 5000);
+    setInterval(changeBackground, 10000);
 </script>
 
 </body>
