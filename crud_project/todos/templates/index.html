@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager | Todo CRUD</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(120deg, #4e73df, #1cc88a);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app {
+            width: 900px;
+            max-width: 95%;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        .sidebar {
+            background: #f8f9fc;
+            padding: 25px;
+            border-right: 1px solid #e3e6f0;
+        }
+
+        .sidebar h2 {
+            margin: 0 0 5px;
+            color: #4e73df;
+        }
+
+        .sidebar p {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .sidebar input,
+        .sidebar textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d3e2;
+        }
+
+        .sidebar textarea { resize: none; height: 90px; }
+
+        .sidebar button {
+            width: 100%;
+            padding: 10px;
+            background: #4e73df;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* RIGHT PANEL */
+        .content {
+            padding: 25px;
+        }
+
+        .todo-card {
+            background: #fff;
+            border: 1px solid #e3e6f0;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .todo-info {
+            display: flex;
+            gap: 10px;
+        }
+
+        .todo-info input[type="checkbox"] {
+            margin-top: 4px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .todo-text b {
+            display: block;
+            font-size: 16px;
+        }
+
+        .todo-text p {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .completed b {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        .completed p {
+            text-decoration: line-through;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .actions button {
+            border: none;
+            padding: 6px 10px;
+            font-size: 13px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .edit { background: #36b9cc; }
+        .delete { background: #e74a3b; }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .pagination button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 5px;
+            background: #4e73df;
+            color: #fff;
+        }
+
+        .pagination button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .app { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+
+    <!-- LEFT -->
+    <div class="sidebar">
+        <h2>Task Manager</h2>
+        <p>Create and manage your tasks</p>
+
+        <input type="hidden" id="todoId">
+        <input type="text" id="title" placeholder="Task title">
+        <textarea id="description" placeholder="Task description"></textarea>
+
+        <button id="submitBtn" onclick="createOrUpdateTodo()">Add Task</button>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="content">
+        <div id="todoList"></div>
+
+        <div class="pagination">
+            <button id="prevBtn" onclick="prevPage()">Previous</button>
+            <button id="nextBtn" onclick="nextPage()">Next</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API_URL = "http://127.0.0.1:8000/api/todos/";
+    let currentPage = 1;
+    let nextPageUrl = null;
+    let prevPageUrl = null;
+
+    function loadTodos(page = 1) {
+        fetch(`${API_URL}?page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                const todos = data.results || [];
+                nextPageUrl = data.next;
+                prevPageUrl = data.previous;
+                currentPage = page;
+
+                let html = "";
+                todos.forEach(todo => {
+                    html += `
+                        <div class="todo-card">
+                            <div class="todo-info">
+                                <input type="checkbox"
+                                    ${todo.is_completed ? "checked" : ""}
+                                    onchange="toggleComplete(${todo.id}, this.checked)">
+                                <div class="todo-text ${todo.is_completed ? "completed" : ""}">
+                                    <b>${todo.title}</b>
+                                    <p>${todo.description || ""}</p>
+                                </div>
+                            </div>
+
+                            <div class="actions">
+                                <button class="edit"
+                                    onclick="editTodo(${todo.id}, '${todo.title}', '${todo.description || ""}')">
+                                    Edit
+                                </button>
+                                <button class="delete" onclick="deleteTodo(${todo.id})">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById("todoList").innerHTML = html;
+                document.getElementById("prevBtn").disabled = !prevPageUrl;
+                document.getElementById("nextBtn").disabled = !nextPageUrl;
+            });
+    }
+
+    function toggleComplete(id, status) {
+        fetch(`${API_URL}${id}/`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ is_completed: status })
+        }).then(() => loadTodos(currentPage));
+    }
+
+    function createOrUpdateTodo() {
+        const id = document.getElementById("todoId").value;
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+
+        if (!title) return alert("Title required");
+
+        const method = id ? "PUT" : "POST";
+        const url = id ? `${API_URL}${id}/` : API_URL;
+
+        fetch(url, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, description, is_completed: false })
+        }).then(() => {
+            resetForm();
+            loadTodos(currentPage);
+        });
+    }
+
+    function editTodo(id, title, description) {
+        document.getElementById("todoId").value = id;
+        document.getElementById("title").value = title;
+        document.getElementById("description").value = description;
+        document.getElementById("submitBtn").innerText = "Update Task";
+    }
+
+    function deleteTodo(id) {
+        fetch(`${API_URL}${id}/`, { method: "DELETE" })
+            .then(() => loadTodos(currentPage));
+    }
+
+    function resetForm() {
+        document.getElementById("todoId").value = "";
+        document.getElementById("title").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("submitBtn").innerText = "Add Task";
+    }
+
+    function nextPage() {
+        if (nextPageUrl) loadTodos(currentPage + 1);
+    }
+
+    function prevPage() {
+        if (prevPageUrl) loadTodos(currentPage - 1);
+    }
+
+    loadTodos();
+</script>
+
+</body>
+</html>
